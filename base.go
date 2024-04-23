@@ -54,12 +54,20 @@ func cloneAndSetup(appName string) {
 		return
 	}
 	fmt.Println("Project created successfully.")
-
+	os.Chdir(appName)
 	// Change to the project directory with safety check
 	if err := os.Chdir(appName); err != nil {
 		fmt.Printf("Failed to change directory: %s\n", err)
 		return
 	}
+	fmt.Println("Changed to project directory to " + appName)
+	// rename base.go to appName.go
+	if err := os.Rename("base.go", appName+".go"); err != nil {
+		fmt.Printf("Failed to rename base.go: %s\n", err)
+		return
+	}
+
+	fmt.Println("Renamed base.go to " + appName + ".go")
 
 	fmt.Println("Setup completed successfully.")
 }

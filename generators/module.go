@@ -12,7 +12,7 @@ func Module(moduleName string) {
 		fmt.Printf("Directory %s already exists\n", moduleName)
 		return
 	}
-
+	os.Chdir("app")
 	// create directory for module with module name
 	err := os.Mkdir(moduleName, 0755)
 	if err != nil {
