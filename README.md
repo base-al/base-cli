@@ -27,6 +27,14 @@ curl -sSL https://raw.githubusercontent.com/base-al/base-cli/main/install.sh | s
 
 The Base CLI is designed to streamline operations and management tasks within your project. Below are detailed instructions on how to use the various commands available.
 
+### Generate new project
+
+```
+base new [projectname]
+```
+
+cd to [projectname] and start use base.
+
 ### Generating Modules
 
 To generate a new module with all necessary components including models, routers, services, and transport logic, use the following command:
