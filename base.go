@@ -6,8 +6,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/base-al/base-cli/db"
 	"github.com/base-al/base-cli/generators"
-
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +23,7 @@ func main() {
 func configureCommands(rootCmd *cobra.Command) {
 	rootCmd.AddCommand(newAppCommand())
 	rootCmd.AddCommand(generateCommand())
+	rootCmd.AddCommand(seedCommand())
 }
 
 func newAppCommand() *cobra.Command {
@@ -54,7 +55,7 @@ func cloneAndSetup(appName string) {
 		return
 	}
 	fmt.Println("Project created successfully.")
-	os.Chdir(appName)
+
 	// Change to the project directory with safety check
 	if err := os.Chdir(appName); err != nil {
 		fmt.Printf("Failed to change directory: %s\n", err)
@@ -90,6 +91,18 @@ func moduleCommand() *cobra.Command {
 			moduleName := args[0]
 			fmt.Printf("Creating new module: %s\n", moduleName)
 			generators.Module(moduleName)
+		},
+	}
+}
+
+// Define seedCommand to seed the database
+func seedCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "seed",
+		Short: "Seed the database with initial data",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Seeding database...")
+			db.SeedAll()
 		},
 	}
 }
