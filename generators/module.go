@@ -2,96 +2,245 @@ package generators
 
 import (
 	"fmt"
+
 	"os"
+	"path/filepath"
+	"text/template"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
-//   creates a new module inside app directory  of current directory
-
+// Module creates a new module inside the app directory of the current directory.
 func Module(moduleName string) {
-	if _, err := os.Stat(moduleName); !os.IsNotExist(err) {
-		fmt.Printf("Directory %s already exists\n", moduleName)
+	modulePath := filepath.Join("app", moduleName)
+	if _, err := os.Stat(modulePath); !os.IsNotExist(err) {
+		fmt.Printf("Directory %s already exists\n", modulePath)
 		return
 	}
-	os.Chdir("app")
-	// create directory for module with module name
-	err := os.Mkdir(moduleName, 0755)
-	if err != nil {
-		fmt.Println("Failed to create module directory")
+
+	// Create directory for module with module name
+	if err := os.MkdirAll(modulePath, 0755); err != nil {
+		fmt.Printf("Failed to create module directory: %s\n", err)
 		return
 	}
 	fmt.Println("Module created successfully.")
 
-	// Change to the module directory
-	os.Chdir(moduleName)
+	// Generate files for module
+	generateFiles(modulePath, moduleName)
+}
 
-	// Create files for module
-	// model.go
-	// service.go
-	// router.go
-	// schema.go
-	// transport.go
-	// helper.go
+// generateFiles creates the necessary files for a module.
+func generateFiles(modulePath, moduleName string) {
+	// Paths for files
 
 	// Create model.go
-	modelFile, err := os.Create("model.go")
-	if err != nil {
-		fmt.Println("Failed to create model.go")
-		return
-	}
-	defer modelFile.Close()
-	modelFile.WriteString("package " + moduleName + "\n\n")
-	modelFile.WriteString("type " + moduleName + " struct {\n\n}\n")
+	GenerateModelsFile(modulePath, moduleName, moduleName)
 
-	// Create service.go
-	serviceFile, err := os.Create("service.go")
-	if err != nil {
-		fmt.Println("Failed to create service.go")
-		return
-	}
-	defer serviceFile.Close()
-	serviceFile.WriteString("package " + moduleName + "\n\n")
-	serviceFile.WriteString("type Service struct {\n\n}\n")
+	// Use GenerateRouterFile to create router.go
+	GenerateRouterFile(modulePath, moduleName, moduleName)
 
-	// Create router.go
-	routerFile, err := os.Create("router.go")
-	if err != nil {
-		fmt.Println("Failed to create router.go")
-		return
-	}
-	defer routerFile.Close()
-	routerFile.WriteString("package " + moduleName + "\n\n")
-	routerFile.WriteString("import (\n\t\"github.com/gorilla/mux\"\n)\n\n")
-	routerFile.WriteString("func RegisterRoutes(router *mux.Router) {\n\n}\n")
+	// Use GenerateServiceFile to create service.go
+	GenerateServiceFile(modulePath, moduleName, moduleName)
 
-	// Create schema.go
-	schemaFile, err := os.Create("schema.go")
-	if err != nil {
-		fmt.Println("Failed to create schema.go")
-		return
-	}
-	defer schemaFile.Close()
-	schemaFile.WriteString("package " + moduleName + "\n\n")
-	schemaFile.WriteString("type " + moduleName + "Schema struct {\n\n}\n")
+	// Use GenerateTransportFile to create transport.go
+	GenerateTransportFile(modulePath, moduleName, moduleName)
+}
 
-	// Create transport.go
-	transportFile, err := os.Create("transport.go")
-	if err != nil {
-		fmt.Println("Failed to create transport.go")
-		return
-	}
-	defer transportFile.Close()
-	transportFile.WriteString("package " + moduleName + "\n\n")
-	transportFile.WriteString("type Transport struct {\n\n}\n")
+// GenerateRouterFile generates a router file from a template for the specified module.
+func GenerateRouterFile(modulePath, moduleName, entityName string) error {
+	cwd, _ := os.Getwd()
+	fmt.Println("Current working directory:", cwd) // This will show you the current working directory
 
-	// Create helper.go
-	helperFile, err := os.Create("helper.go")
-	if err != nil {
-		fmt.Println("Failed to create helper.go")
-		return
-	}
-	defer helperFile.Close()
-	helperFile.WriteString("package " + moduleName + "\n\n")
+	tplPath := filepath.Join("generators", "templates", "router.go.tpl") // Adjust this path as necessary
+	outFile := filepath.Join(modulePath, "router.go")
 
-	// Change to the project directory
-	os.Chdir("..")
+	fmt.Println("Loading template from:", tplPath) // Debug print
+
+	// Prepare the file where the output will be written
+	file, err := os.Create(outFile)
+	if err != nil {
+		fmt.Println("Failed to create output file:", err) // Debug print
+		return err
+	}
+	defer file.Close()
+
+	fmt.Println("Created output file at:", outFile) // Debug print
+
+	// Parse the template file
+	tmpl, err := template.ParseFiles(tplPath)
+	if err != nil {
+		fmt.Println("Error parsing template file:", err) // Debug print
+		return err
+	}
+
+	fmt.Println("Template parsed successfully") // Debug print
+	caser := cases.Title(language.English)
+	// Define the data for the template
+	data := struct {
+		ModuleName  string
+		EntityName  string
+		EntityTitle string
+	}{
+		ModuleName:  moduleName,
+		EntityName:  entityName,
+		EntityTitle: caser.String(entityName),
+	}
+
+	// Execute the template and write to file
+	if err := tmpl.Execute(file, data); err != nil {
+		fmt.Println("Error executing template:", err) // Debug print
+		return err
+	}
+
+	fmt.Printf("Router file created successfully: %s\n", outFile) // Debug print
+	return nil
+}
+
+func GenerateServiceFile(modulePath, moduleName, entityName string) error {
+	cwd, _ := os.Getwd()
+	fmt.Println("Current working directory:", cwd) // This will show you the current working directory
+
+	tplPath := filepath.Join("generators", "templates", "service.go.tpl") // Adjust this path as necessary
+	outFile := filepath.Join(modulePath, "service.go")
+
+	fmt.Println("Loading template from:", tplPath) // Debug print
+
+	// Prepare the file where the output will be written
+	file, err := os.Create(outFile)
+	if err != nil {
+		fmt.Println("Failed to create output file:", err) // Debug print
+		return err
+	}
+	defer file.Close()
+
+	fmt.Println("Created output file at:", outFile) // Debug print
+
+	// Parse the template file
+	tmpl, err := template.ParseFiles(tplPath)
+	if err != nil {
+		fmt.Println("Error parsing template file:", err) // Debug print
+		return err
+	}
+
+	fmt.Println("Template parsed successfully") // Debug print
+	caser := cases.Title(language.English)
+	// Define the data for the template
+	data := struct {
+		ModuleName  string
+		EntityName  string
+		EntityTitle string
+	}{
+		ModuleName:  moduleName,
+		EntityName:  entityName,
+		EntityTitle: caser.String(entityName),
+	}
+
+	// Execute the template and write to file
+	if err := tmpl.Execute(file, data); err != nil {
+		fmt.Println("Error executing template:", err) // Debug print
+		return err
+	}
+
+	fmt.Printf("Service file created successfully: %s\n", outFile) // Debug print
+	return nil
+}
+
+func GenerateTransportFile(modulePath, moduleName, entityName string) error {
+	cwd, _ := os.Getwd()
+	fmt.Println("Current working directory:", cwd) // This will show you the current working directory
+
+	tplPath := filepath.Join("generators", "templates", "transport.go.tpl") // Adjust this path as necessary
+	outFile := filepath.Join(modulePath, "transport.go")
+
+	fmt.Println("Loading template from:", tplPath) // Debug print
+
+	// Prepare the file where the output will be written
+	file, err := os.Create(outFile)
+	if err != nil {
+		fmt.Println("Failed to create output file:", err) // Debug print
+		return err
+	}
+	defer file.Close()
+
+	fmt.Println("Created output file at:", outFile) // Debug print
+
+	// Parse the template file
+	tmpl, err := template.ParseFiles(tplPath)
+	if err != nil {
+		fmt.Println("Error parsing template file:", err) // Debug print
+		return err
+	}
+
+	fmt.Println("Template parsed successfully") // Debug print
+	caser := cases.Title(language.English)
+	// Define the data for the template
+	data := struct {
+		ModuleName  string
+		EntityName  string
+		EntityTitle string
+	}{
+		ModuleName:  moduleName,
+		EntityName:  entityName,
+		EntityTitle: caser.String(entityName),
+	}
+
+	// Execute the template and write to file
+	if err := tmpl.Execute(file, data); err != nil {
+		fmt.Println("Error executing template:", err) // Debug print
+		return err
+	}
+
+	fmt.Printf("Transport file created successfully: %s\n", outFile) // Debug print
+	return nil
+}
+
+// GenerateModelsFile creates a models file for the specified module.
+func GenerateModelsFile(modulePath, moduleName, entityName string) error {
+	cwd, _ := os.Getwd()
+	fmt.Println("Current working directory:", cwd) // This will show you the current working directory
+
+	tplPath := filepath.Join("generators", "templates", "models.go.tpl") // Adjust this path as necessary
+	outFile := filepath.Join(modulePath, "models.go")
+
+	fmt.Println("Loading template from:", tplPath) // Debug print
+
+	// Prepare the file where the output will be written
+	file, err := os.Create(outFile)
+	if err != nil {
+		fmt.Println("Failed to create output file:", err) // Debug print
+		return err
+	}
+	defer file.Close()
+
+	fmt.Println("Created output file at:", outFile) // Debug print
+	caser := cases.Title(language.English)
+	// Parse the template file
+	tmpl, err := template.ParseFiles(tplPath)
+	if err != nil {
+		fmt.Println("Error parsing template file:", err) // Debug print
+		return err
+	}
+
+	fmt.Println("Template parsed successfully") // Debug print
+
+	// Define the data for the template
+	data := struct {
+		ModuleName  string
+		EntityName  string
+		EntityTitle string
+	}{
+		ModuleName:  moduleName,
+		EntityName:  entityName,
+		EntityTitle: caser.String(entityName),
+	}
+
+	// Execute the template and write to file
+	if err := tmpl.Execute(file, data); err != nil {
+		fmt.Println("Error executing template:", err) // Debug print
+		return err
+	}
+
+	fmt.Printf("Models file created successfully: %s\n", outFile) // Debug print
+	return nil
 }

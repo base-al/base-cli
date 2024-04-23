@@ -7,35 +7,6 @@ import (
 	"strings"
 )
 
-// Seed creates a new seed file
-
-func Seed(seedName string) {
-
-	// Check if seed file already exists
-	if _, err := os.Stat(seedName); !os.IsNotExist(err) {
-		fmt.Printf("Seed file %s already exists\n", seedName)
-		return
-	}
-
-	// Create seed file
-	seedFile, err := os.Create(seedName)
-	if err != nil {
-		fmt.Println("Failed to create seed file")
-		return
-	}
-	defer seedFile.Close()
-
-	// Write to seed file
-	seedFile.WriteString("package db\n\n")
-	seedFile.WriteString("import (\n")
-	seedFile.WriteString("\t\"github.com/jinzhu/gorm\"\n")
-	seedFile.WriteString(")\n\n")
-	seedFile.WriteString("// Seed function\n")
-	seedFile.WriteString("func Seed(db *gorm.DB) {\n\n}\n")
-
-	fmt.Println("Seed file created successfully.")
-}
-
 // Seeds all seed files in the app/[module]/seed.go  and core/[module]/seed.go
 
 func SeedAll() {
@@ -161,7 +132,7 @@ func seedModule(seedFile string) error {
 
 	// Check if the seed function already exists
 	if strings.Contains(content, "func Seed(db *gorm.DB)") {
-		return fmt.Errorf("Seed function already exists")
+		return fmt.Errorf("seed function already exists")
 	}
 
 	// Add the seed function
