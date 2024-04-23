@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/base-al/base-cli/generators"
+
 	"github.com/spf13/cobra"
 )
 
@@ -53,14 +55,25 @@ func cloneAndSetup(appName string) {
 	// Change to the project directory
 	os.Chdir(appName)
 
-	// Install dependencies or perform other setup
-	// setupCmd := exec.Command("sh", "-c", "scripts/setup.sh")
-	// setupCmd.Stdout = &stdout
-	// setupCmd.Stderr = &stderr
-	// setupErr := setupCmd.Run()
-	// if setupErr != nil {
-	// 	fmt.Printf("Setup failed: %s\n", stderr.String())
-	// 	return
-	// }
 	fmt.Println("Setup completed successfully.")
+}
+
+// base generate module [MODULENAME] or base g module [MODULENAME]
+// module.go is in the generators directory
+
+var generateCmd = &cobra.Command{
+	Use:   "generate",
+	Short: "Generate various components",
+	// Other properties and potential subcommands can be added here
+}
+
+var generateModuleCmd = &cobra.Command{
+	Use:   "module [MODULENAME]",
+	Short: "Generate a new module",
+	Args:  cobra.ExactArgs(1), // Ensures exactly one argument is passed
+	Run: func(cmd *cobra.Command, args []string) {
+		moduleName := args[0]
+		fmt.Printf("Creating new module: %s\n", moduleName)
+		generators.Module(moduleName) // Call the function from your module.go
+	},
 }
