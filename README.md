@@ -1,6 +1,6 @@
 # Base CLI Tool
 
-The Base CLI Tool is a command-line interface designed to facilitate and automate tasks for managing your project. This tool serves as the foundation for executing a variety of commands that manipulate and interact with your project's resources.
+The Base CLI Tool is a command-line interface designed to help generate content for https://github.com/base-al/base-core
 
 ## Features
 
